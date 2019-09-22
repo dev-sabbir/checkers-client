@@ -1,0 +1,15 @@
+.guti {
+    height: 55px;
+    width: 55px;
+    -webkit-border-radius: 50%;
+    -moz-border-radius: 50%;
+    border-radius: 50%;
+    margin: 0 auto;
+}
+.player-one {
+    background-color: yellow;
+}
+
+.player-two {
+    background-color: green;
+}
