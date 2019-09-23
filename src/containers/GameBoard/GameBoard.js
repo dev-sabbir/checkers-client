@@ -2,108 +2,75 @@ import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import './GameBoard.css';
 import Guti from '../Guti/Guti';
-import {initAction, updateBoardStatus, onClickGuti} from './actions';
-
+import { updateBoardStatus, onClickGuti, updateBoardIndex, updateHighlightedIndex, onClickHighlightedIndex } from './actions';
+import {generateBoardStatus, checkValidMoves, checkIfArrSame} from '../../utils/utilities'
 
 class GameBoard extends Component {
     render() {
-        console.log(this.props.boardStatus);
-        let generateBoardStatus = (row, col) => {
-            let boardStatus = {};
+        let generateBoard = (boardStatus) => {
+            // boardStatus = clearBoardStatusHighlight(boardStatus);
             let board = [];
-            let count = 0;
-            let gutiCount = 0;
-            for (let i = 0; i < row; i++) {
-                let row = [];
-                for (let j = 0; j < col; j++) {
-                    boardStatus[count] = {isOccupied: false, gutiId: null};
-                    let colName = 'white';
-                    if(i%2 === 0) {
-                        if(count%2 === 1) {
-                            colName = 'black';
-                        }
-                    } else {
-                        if(count%2===0) {
-                            colName = 'black';
-                        }
+            let rowArr = [];
+            for(let boardIndex in boardStatus) {
+                if(boardIndex && this.props.selectedBoardIndex && Number(boardIndex) === Number(this.props.selectedBoardIndex)) {
+                    console.log(this.props.selectedBoardIndex);
+                    console.log(boardIndex);
+                    let direction = boardStatus[boardIndex].gutiType === 'player-one' ? -1 : 1;
+                    let validIndexes = checkValidMoves(boardStatus, boardIndex, direction, false);
+                    if(validIndexes && validIndexes.length && !checkIfArrSame(validIndexes, this.props.highlightedIndexes)) {
+                        this.props.updateHighlightedIndex(validIndexes, 'isHighlighted', true);
                     }
-                    let guti = "";
-                    let gutiType = "";
-                    if(i<=1 || i>=6) {
-                        if(i<=1) {
-                            gutiType = "player-one";
-                        } else {
-                            gutiType = "player-two";
-                        }
-                        if(colName==='black') {
-                            gutiCount ++;
-                            guti = <Guti currentIndex = {count} gutiId={gutiCount} onClickGuti={this.props.onClickGuti} type={gutiType}></Guti>;
-                            boardStatus[count].isOccupied = true;
-                            boardStatus[count].gutiId = gutiCount;
-                        }
-                    }
-                    let temp = <span><div className={`col ${colName}`}>{guti}</div></span>;
-                    count++;
-                    row.push(temp);
                 }
-                let rowFinished = <div className="row">{row}</div>;
-                board.push(rowFinished);
-            }
-            this.props.updateBoardStatus(boardStatus);
-            return board;
-        };
-        let generateBoard = (row, col) => {
-            let boardStatus = {};
-            let board = [];
-            let count = 0;
-            let gutiCount = 0;
-            for (let i = 0; i < row; i++) {
-                let row = [];
-                for (let j = 0; j < col; j++) {
-                    boardStatus[count] = {};
-                    let colName = 'white';
-                    if(i%2 === 0) {
-                        if(count%2 === 1) {
-                            colName = 'black';
-                        }
-                    } else {
-                        if(count%2===0) {
-                            colName = 'black';
-                        }
-                    }
-                    let guti = "";
-                    let gutiType = "";
-                    if(i<=1 || i>=6) {
-                        if(i<=1) {
-                            gutiType = "player-one";
-                        } else {
-                            gutiType = "player-two";
-                        }
-                        if(colName==='black') {
-                            gutiCount ++;
-                            guti = <Guti currentIndex = {count} gutiId={gutiCount} onClickGuti={this.props.onClickGuti} type={gutiType}></Guti>
-                        }
-                    }
-                    let temp = <span><div className={`col ${colName}`}>{guti}</div></span>;
-                    count++;
-                    row.push(temp);
-                }
-                let rowFinished = <div className="row">{row}</div>;
-                board.push(rowFinished);
-            }
+                let guti = "";
+                let gutiId = boardStatus[boardIndex].gutiId;
+                let gutiType = boardStatus[boardIndex].gutiType;
+                let indexColor = boardStatus[boardIndex].color;
+                let highlightClass = this.props.highlightedIndexes && this.props.highlightedIndexes.includes(Number(boardIndex)) ? 'highlight' : '';
 
+                if(boardStatus[boardIndex].isOccupied) {
+                    guti = <Guti currentIndex = {boardIndex} gutiId={gutiId} onClickGuti={this.props.onClickGuti} type={gutiType}></Guti>
+                }
+
+                let temp = "";
+                if(highlightClass === 'highlight') {
+                    temp = (<span key={boardIndex}>
+                        <div data-index={boardIndex} className={`col ${indexColor} ${highlightClass}`}
+                             onClick={this.props.onClickHighlightedIndex}>
+                            {guti}
+                        </div>
+                    </span>);
+                } else {
+                    temp = (<span key={boardIndex}>
+                        <div data-index={boardIndex} className={`col ${indexColor} ${highlightClass}`}>
+                            {guti}
+                        </div>
+                    </span>);
+                }
+                if(boardIndex % 8 === 0) {
+                    let rowFinished = <div key={boardIndex / 8} className="row">{rowArr}</div>;
+                    board.push(rowFinished);
+                    rowArr = [];
+                    rowArr.push(temp);
+                } else {
+                    rowArr.push(temp);
+                }
+            }
+            let rowFinished = <div key={63 / 8} className="row">{rowArr}</div>;
+            board.push(rowFinished);
             return board;
         };
+
         let numOfRow = 8;
         let numOfCol = 8;
         let board = "";
         if (this.props.boardStatus===null) {
+            let boardStatus = generateBoardStatus(numOfRow, numOfCol);
+            this.props.updateBoardStatus(boardStatus);
             board = generateBoardStatus(numOfRow, numOfCol);
         }
-        board = generateBoard(numOfRow, numOfCol);
+        board = generateBoard(this.props.boardStatus);
         return (
             <div>
-                <h1>{this.props.text}</h1>
                 <div className="game-board">{board}</div>
             </div>
         );
@@ -112,19 +79,30 @@ class GameBoard extends Component {
 const mapStateToProps = (state) => {
     let gameBoardState = state.gameBoardReducer;
     return {
-        text: gameBoardState.text,
         boardStatus: gameBoardState.boardStatus,
         selectedGuti: gameBoardState.selectedGuti,
         selectedBoardIndex: gameBoardState.selectedBoardIndex,
+        highlightedIndexes: gameBoardState.highlightedIndexes,
     };
 };
 const mapDispatchToProps = (dispatch) => {
     return {
         onClickGuti: (evt) => {
-            return dispatch(onClickGuti( evt.target.getAttribute("id"), evt.target.getAttribute("data-index")));
+            dispatch(updateHighlightedIndex([]));
+            dispatch(onClickGuti( evt.target.getAttribute("id"), evt.target.getAttribute("data-index")));
         },
         updateBoardStatus: (boardStatus) => {
             return dispatch(updateBoardStatus(boardStatus))
+        },
+        updateBoardIndex: (arrOfIndex, key, value) => {
+            return dispatch(updateBoardIndex(arrOfIndex, key, value));
+        },
+        updateHighlightedIndex: (arrOfIndex) => {
+            return dispatch(updateHighlightedIndex(arrOfIndex));
+        },
+        onClickHighlightedIndex: (evt) => {
+            dispatch(updateHighlightedIndex([]));
+            dispatch(onClickHighlightedIndex(evt.target.getAttribute("data-index")))
         }
     }
 };

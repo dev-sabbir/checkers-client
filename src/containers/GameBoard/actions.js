@@ -1,11 +1,3 @@
-export const initAction = (className) => {
-    console.log("here");
-    return {
-        type: "INIT_ACTION",
-        payload: className,
-    };
-};
-
 export const onClickGuti = (gutiId, boardIndex) => {
     return {
         type: "ON_CLICK_GUTI",
@@ -20,3 +12,26 @@ export const updateBoardStatus = (boardStatus) => {
         payload: boardStatus,
     }
 };
+
+export const updateBoardIndex = (arrOfIndex, key, value) => {
+  return {
+      type: "UPDATE_BOARD_INDEX",
+      indexes: arrOfIndex,
+      key,
+      value,
+  }
+};
+
+export const updateHighlightedIndex = (indexes) => {
+    return {
+        type: "UPDATE_HIGHLIGHTED_INDEX",
+        indexes,
+    };
+};
+
+export const onClickHighlightedIndex = (index) => {
+    return {
+        type: "MOVE_GUTI",
+        index,
+    }
+}

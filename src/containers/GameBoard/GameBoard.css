@@ -1,13 +1,11 @@
 .game-board {
     width: 50%;
     margin: 0 auto;
-    background-color: #a8cbff;
 }
 
 .row {
     width: 92%;
     display: block;
-    border: 1px solid red;
     margin: 0 auto;
 }
 
@@ -17,6 +15,10 @@
     padding: 1em;
     border: 1px solid black;
     display: inline-block;
+}
+
+.highlight {
+    opacity: .3;
 }
 
 .white {
