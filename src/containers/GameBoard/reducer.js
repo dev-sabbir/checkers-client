@@ -5,6 +5,7 @@ const initialState = {
     boardStatus: null,
     activePlayer: "player-one",
     highlightedIndexes: null,
+    winner: "",
 };
 
 const gameBoardReducer = (state = initialState, action) => {
@@ -34,14 +35,19 @@ const gameBoardReducer = (state = initialState, action) => {
                 let selectedGuti = draft.selectedGuti;
                 let selectedBoardIndex = draft.selectedBoardIndex;
                 let destIndex = action.index;
-                console.log(selectedBoardIndex);
-                console.log(destIndex);
+
+                if(destIndex<=7 && draft.activePlayer === "player-two") {
+                    draft.boardStatus[selectedBoardIndex].isKing = true;
+                } else if( destIndex>=56 && draft.activePlayer === "player-one" ) {
+                    draft.boardStatus[selectedBoardIndex].isKing = true;
+                }
+
                 if(action.isKillingMove) {
+                    draft.hasKillingMove = true;
                     let killedIndex = (Number(selectedBoardIndex) + Number(destIndex)) / 2;
-                    console.log(killedIndex);
+
                     let data = state.boardStatus;
-                    console.log(data);
-                    console.log(data[killedIndex]);
+
                     let gutiId = data[killedIndex].gutiId;
                     draft.boardStatus = clearBoardIndex(draft.boardStatus, killedIndex);
 
@@ -51,7 +57,7 @@ const gameBoardReducer = (state = initialState, action) => {
                         draft.playerTwoGuti[gutiId].status = "inactive";
                     }
                 } else {
-
+                    draft.activePlayer = draft.activePlayer === 'player-one' ? 'player-two' : 'player-one';
                 }
 
                 let isKing = draft.boardStatus[selectedBoardIndex].isKing;
@@ -67,10 +73,15 @@ const gameBoardReducer = (state = initialState, action) => {
                 draft.boardStatus[destIndex].gutiType = gutiType;
                 draft.boardStatus[destIndex].isKing = isKing;
 
-
-
-                draft.activePlayer = draft.activePlayer === 'player-one' ? 'player-two' : 'player-one';
                 break;
+            }
+            case "ON_FINISH_GAME": {
+                draft.winner = action.winner;
+                break;
+            }
+            case "TOGGLE_ACTIVE_PLAYER": {
+                draft.activePlayer = draft.activePlayer === 'player-one' ? 'player-two' : 'player-one';
+                draft.hasKillingMove = false;
             }
             default: {
                 return draft;

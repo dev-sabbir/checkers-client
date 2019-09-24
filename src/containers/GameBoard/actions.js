@@ -35,4 +35,17 @@ export const onClickHighlightedIndex = (index, isKillingMove) => {
         index,
         isKillingMove,
     }
-}
+};
+
+export const onFinishGame = (winner) => {
+    return {
+        type: "ON_FINISH_GAME",
+        winner,
+    }
+};
+
+export const toggleActivePlayer = () => {
+    return {
+        type: "TOGGLE_ACTIVE_PLAYER",
+    };
+};

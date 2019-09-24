@@ -2,14 +2,19 @@ import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import './GameBoard.css';
 import Guti from '../Guti/Guti';
-import { updateBoardStatus, onClickGuti, updateBoardIndex, updateHighlightedIndex, onClickHighlightedIndex } from './actions';
+import { updateBoardStatus, onClickGuti, updateBoardIndex, updateHighlightedIndex, onClickHighlightedIndex, onFinishGame, toggleActivePlayer } from './actions';
 import {generateBoardStatus, checkIfArrSame, getValidIndexes, checkKillingMove} from '../../utils/utilities'
 
 class GameBoard extends Component {
     render() {
+        if(this.props.winner) {
+            console.log("Winner is: ", this.props.winner);
+        }
         let generateBoard = (boardStatus) => {
-
             let killingMoveData = checkKillingMove(boardStatus, this.props.activePlayer);
+            if(!killingMoveData.hasKillingMove && this.props.hasKillingMove) {
+                this.props.toggleActivePlayer();
+            }
             let board = [];
             let rowArr = [];
             for(let boardIndex in boardStatus) {
@@ -33,9 +38,9 @@ class GameBoard extends Component {
 
                 if(boardStatus[boardIndex].isOccupied) {
                     if((killingMoveData.hasKillingMove && killingMoveData.killingMoves.includes(boardIndex)) || !killingMoveData.hasKillingMove) {
-                        guti = <Guti currentIndex = {boardIndex} gutiId={gutiId} onClickGuti={this.props.onClickGuti} type={gutiType}></Guti>
+                        guti = <Guti currentIndex = {boardIndex} gutiId={gutiId} onClickGuti={this.props.onClickGuti} type={gutiType} isKing={boardStatus[boardIndex].isKing}></Guti>
                     } else {
-                        guti = <Guti currentIndex = {boardIndex} gutiId={gutiId}  type={gutiType}></Guti>
+                        guti = <Guti currentIndex = {boardIndex} gutiId={gutiId}  type={gutiType} isKing={boardStatus[boardIndex].isKing}></Guti>
                     }
                 }
 
@@ -71,28 +76,39 @@ class GameBoard extends Component {
         let generatePlayerGutiSection = (playerOneGuti, playerTwoGuti) => {
             let playerOneData = [];
             let playerTwoData = [];
+            let p1InactiveCount = 0;
+            let p2InactiveCount = 0;
             for(let i in playerOneGuti) {
                 if(playerOneGuti[i].status === 'inactive') {
+                    p1InactiveCount++;
                     let guti = <div className="col"><Guti currentIndex = {i} gutiId={i} type="player-one"></Guti></div>;
                     playerOneData.push(guti);
                 }
             }
-
             for(let i in playerTwoGuti) {
                 if(playerTwoGuti[i].status === 'inactive') {
+                    p2InactiveCount++;
                     let guti = <div className="col"><Guti currentIndex = {i} gutiId={i} type="player-two"></Guti></div>;
                     playerTwoData.push(guti);
                 }
             }
+            let winner = null;
+            if(p1InactiveCount === 12) {
+                winner = "player-two";
+            } else if(p2InactiveCount === 12) {
+                winner = "player-one";
+            }
+            if(winner && winner.length) {
+                this.props.onFinishGame(winner);
+            }
             return {playerOneData, playerTwoData};
-        }
+        };
 
         let numOfRow = 8;
         let numOfCol = 8;
         let board = "";
         if (this.props.boardStatus===null) {
             let initData = generateBoardStatus(numOfRow, numOfCol);
-            console.log(initData);
             this.props.updateBoardStatus(initData);
         }
         board = generateBoard(this.props.boardStatus);
@@ -122,6 +138,8 @@ const mapStateToProps = (state) => {
         activePlayer: gameBoardState.activePlayer,
         playerOneGuti: gameBoardState.playerOneGuti,
         playerTwoGuti: gameBoardState.playerTwoGuti,
+        winner: gameBoardState.winner,
+        hasKillingMove: gameBoardState.hasKillingMove,
     };
 };
 const mapDispatchToProps = (dispatch) => {
@@ -142,6 +160,12 @@ const mapDispatchToProps = (dispatch) => {
         onClickHighlightedIndex: (evt) => {
             dispatch(updateHighlightedIndex([]));
             dispatch(onClickHighlightedIndex(evt.target.getAttribute("data-index"), evt.target.getAttribute("data-is-killing-move")))
+        },
+        onFinishGame: (winner) => {
+            dispatch(onFinishGame(winner));
+        },
+        toggleActivePlayer: () => {
+            dispatch(toggleActivePlayer());
         }
     }
 };

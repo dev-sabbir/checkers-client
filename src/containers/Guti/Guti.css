@@ -13,3 +13,11 @@
 .player-two {
     background-color: green;
 }
+
+.player-one.king {
+    background-color: orange;
+}
+
+.player-two.king {
+    background-color: palegreen;
+}

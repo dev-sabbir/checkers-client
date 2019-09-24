@@ -51,18 +51,23 @@ export const checkKillingMove = (boardStatus, activePlayer) => {
             for(let j in dirArr) {
                 let row = currRow + dirArr[j][0] * direction;
                 let col = currCol + dirArr[j][1] * direction;
-                let data = getIndexFromRowCol(row, col);
+                let isValid = checkValidity(row, col);
+                if(isValid) {
+                    let data = getIndexFromRowCol(row, col);
 
-                if(boardStatus[data].isOccupied && boardStatus[data].gutiType != activePlayer) {
-                    row = row + dirArr[j][0] * direction;
-                    col = col + dirArr[j][1] * direction;
-                    data = getIndexFromRowCol(row, col);
-                    let isValid = checkValidity(row, col) && !boardStatus[data].isOccupied;
-                    if(isValid) {
-                        killingIndex.push(i);
-                        returnData.hasKillingMove = true;
+                    if(boardStatus[data].isOccupied && boardStatus[data].gutiType != activePlayer) {
+                        row = row + dirArr[j][0] * direction;
+                        col = col + dirArr[j][1] * direction;
+                        let isValid = checkValidity(row, col);
+                        data = getIndexFromRowCol(row, col);
+                        isValid = isValid && !boardStatus[data].isOccupied;
+                        if(isValid) {
+                            killingIndex.push(i);
+                            returnData.hasKillingMove = true;
+                        }
                     }
                 }
+
             }
 
         }
@@ -89,23 +94,27 @@ export const getValidIndexes = (boardStatus, index) =>{
     for(let i in dirArr) {
         let row = currRow + dirArr[i][0] * direction;
         let col = currCol + dirArr[i][1] * direction;
-        let data = getIndexFromRowCol(row, col);
-
-        if(!boardStatus[data].isOccupied) {
-            isValid = checkValidity(row, col);
-            if(isValid) {
+        isValid = checkValidity(row, col);
+        if(isValid) {
+            let data = getIndexFromRowCol(row, col);
+            if(!boardStatus[data].isOccupied) {
                 ret.push(data);
-            }
-        } else if(boardStatus[data].isOccupied && boardStatus[data].gutiType != boardStatus[index].gutiType) {
-            row = row + dirArr[i][0] * direction;
-            col = col + dirArr[i][1] * direction;
-            data = getIndexFromRowCol(row, col);
-            isValid = checkValidity(row, col) && !boardStatus[data].isOccupied;
-            if(isValid) {
-                killingRet.push(data);
-                returnData.hasKillingMove = true;
+            } else if(boardStatus[data].isOccupied && boardStatus[data].gutiType != boardStatus[index].gutiType) {
+                row = row + dirArr[i][0] * direction;
+                col = col + dirArr[i][1] * direction;
+                isValid = checkValidity(row, col);
+                if(isValid) {
+                    data = getIndexFromRowCol(row, col);
+                    isValid = isValid && !boardStatus[data].isOccupied;
+                    if(isValid) {
+                        killingRet.push(data);
+                        returnData.hasKillingMove = true;
+                    }
+                }
+
             }
         }
+
     }
     returnData.killingMoves = killingRet;
     returnData.validMoves = ret;
