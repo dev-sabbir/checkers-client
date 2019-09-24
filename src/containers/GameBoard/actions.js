@@ -29,9 +29,10 @@ export const updateHighlightedIndex = (indexes) => {
     };
 };
 
-export const onClickHighlightedIndex = (index) => {
+export const onClickHighlightedIndex = (index, isKillingMove) => {
     return {
         type: "MOVE_GUTI",
         index,
+        isKillingMove,
     }
 }

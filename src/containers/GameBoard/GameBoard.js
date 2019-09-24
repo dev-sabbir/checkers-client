@@ -3,22 +3,26 @@ import {connect} from 'react-redux';
 import './GameBoard.css';
 import Guti from '../Guti/Guti';
 import { updateBoardStatus, onClickGuti, updateBoardIndex, updateHighlightedIndex, onClickHighlightedIndex } from './actions';
-import {generateBoardStatus, checkValidMoves, checkIfArrSame} from '../../utils/utilities'
+import {generateBoardStatus, checkIfArrSame, getValidIndexes, checkKillingMove} from '../../utils/utilities'
 
 class GameBoard extends Component {
     render() {
         let generateBoard = (boardStatus) => {
-            // boardStatus = clearBoardStatusHighlight(boardStatus);
+
+            let killingMoveData = checkKillingMove(boardStatus, this.props.activePlayer);
             let board = [];
             let rowArr = [];
             for(let boardIndex in boardStatus) {
                 if(boardIndex && this.props.selectedBoardIndex && Number(boardIndex) === Number(this.props.selectedBoardIndex)) {
-                    console.log(this.props.selectedBoardIndex);
-                    console.log(boardIndex);
-                    let direction = boardStatus[boardIndex].gutiType === 'player-one' ? -1 : 1;
-                    let validIndexes = checkValidMoves(boardStatus, boardIndex, direction, false);
+                    let validIndexeData = getValidIndexes(boardStatus, boardIndex);
+                    let validIndexes = [];
+                    if(validIndexeData.hasKillingMove) {
+                        validIndexes = validIndexeData.killingMoves;
+                    } else {
+                        validIndexes = validIndexeData.validMoves;
+                    }
                     if(validIndexes && validIndexes.length && !checkIfArrSame(validIndexes, this.props.highlightedIndexes)) {
-                        this.props.updateHighlightedIndex(validIndexes, 'isHighlighted', true);
+                        this.props.updateHighlightedIndex(validIndexes);
                     }
                 }
                 let guti = "";
@@ -28,13 +32,17 @@ class GameBoard extends Component {
                 let highlightClass = this.props.highlightedIndexes && this.props.highlightedIndexes.includes(Number(boardIndex)) ? 'highlight' : '';
 
                 if(boardStatus[boardIndex].isOccupied) {
-                    guti = <Guti currentIndex = {boardIndex} gutiId={gutiId} onClickGuti={this.props.onClickGuti} type={gutiType}></Guti>
+                    if((killingMoveData.hasKillingMove && killingMoveData.killingMoves.includes(boardIndex)) || !killingMoveData.hasKillingMove) {
+                        guti = <Guti currentIndex = {boardIndex} gutiId={gutiId} onClickGuti={this.props.onClickGuti} type={gutiType}></Guti>
+                    } else {
+                        guti = <Guti currentIndex = {boardIndex} gutiId={gutiId}  type={gutiType}></Guti>
+                    }
                 }
 
                 let temp = "";
                 if(highlightClass === 'highlight') {
                     temp = (<span key={boardIndex}>
-                        <div data-index={boardIndex} className={`col ${indexColor} ${highlightClass}`}
+                        <div data-is-killing-move={killingMoveData.hasKillingMove} data-index={boardIndex} className={`col ${indexColor} ${highlightClass}`}
                              onClick={this.props.onClickHighlightedIndex}>
                             {guti}
                         </div>
@@ -60,18 +68,46 @@ class GameBoard extends Component {
             return board;
         };
 
+        let generatePlayerGutiSection = (playerOneGuti, playerTwoGuti) => {
+            let playerOneData = [];
+            let playerTwoData = [];
+            for(let i in playerOneGuti) {
+                if(playerOneGuti[i].status === 'inactive') {
+                    let guti = <div className="col"><Guti currentIndex = {i} gutiId={i} type="player-one"></Guti></div>;
+                    playerOneData.push(guti);
+                }
+            }
+
+            for(let i in playerTwoGuti) {
+                if(playerTwoGuti[i].status === 'inactive') {
+                    let guti = <div className="col"><Guti currentIndex = {i} gutiId={i} type="player-two"></Guti></div>;
+                    playerTwoData.push(guti);
+                }
+            }
+            return {playerOneData, playerTwoData};
+        }
+
         let numOfRow = 8;
         let numOfCol = 8;
         let board = "";
         if (this.props.boardStatus===null) {
-            let boardStatus = generateBoardStatus(numOfRow, numOfCol);
-            this.props.updateBoardStatus(boardStatus);
-            board = generateBoardStatus(numOfRow, numOfCol);
+            let initData = generateBoardStatus(numOfRow, numOfCol);
+            console.log(initData);
+            this.props.updateBoardStatus(initData);
         }
         board = generateBoard(this.props.boardStatus);
+        let gutiData = {
+            playerOneData: [],
+            playerTwoData: [],
+        }
+        gutiData = generatePlayerGutiSection(this.props.playerOneGuti, this.props.playerTwoGuti);
         return (
             <div>
+                <h1>Player One</h1>
+                <div className="player-one-guti">{gutiData.playerOneData}</div>
                 <div className="game-board">{board}</div>
+                <div className="player-two-guti">{gutiData.playerTwoData}</div>
+                <h1>Player Two</h1>
             </div>
         );
     }
@@ -83,6 +119,9 @@ const mapStateToProps = (state) => {
         selectedGuti: gameBoardState.selectedGuti,
         selectedBoardIndex: gameBoardState.selectedBoardIndex,
         highlightedIndexes: gameBoardState.highlightedIndexes,
+        activePlayer: gameBoardState.activePlayer,
+        playerOneGuti: gameBoardState.playerOneGuti,
+        playerTwoGuti: gameBoardState.playerTwoGuti,
     };
 };
 const mapDispatchToProps = (dispatch) => {
@@ -102,7 +141,7 @@ const mapDispatchToProps = (dispatch) => {
         },
         onClickHighlightedIndex: (evt) => {
             dispatch(updateHighlightedIndex([]));
-            dispatch(onClickHighlightedIndex(evt.target.getAttribute("data-index")))
+            dispatch(onClickHighlightedIndex(evt.target.getAttribute("data-index"), evt.target.getAttribute("data-is-killing-move")))
         }
     }
 };

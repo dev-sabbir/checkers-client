@@ -1,5 +1,7 @@
 export const generateBoardStatus =  (row, col) => {
     let boardStatus = {};
+    let playerOneGuti = {};
+    let playerTwoGuti = {};
     let count = 0;
     let gutiCount = 0;
     for (let i = 0; i < row; i++) {
@@ -16,39 +18,99 @@ export const generateBoardStatus =  (row, col) => {
                 boardStatus[count].color = 'black';
                 if(i<=2 || i>=5) {
                     gutiCount ++;
+                    if(gutiCount <=11) {
+                        playerOneGuti[gutiCount] = {};
+                        playerOneGuti[gutiCount].status = "active";
+                    } else {
+                        playerTwoGuti[gutiCount] = {};
+                        playerTwoGuti[gutiCount].status = "active";
+                    }
                     boardStatus[count].isOccupied = true;
                     boardStatus[count].gutiId = gutiCount;
+                    boardStatus[count].isKing = false;
                 }
             }
 
             count++;
         }
     }
-    return boardStatus;
+
+    return {boardStatus, playerOneGuti, playerTwoGuti};
 };
 
-export const checkValidMoves = (boardStatus, index, direction=0, isKing = false) =>{
-    let ret = [];
-    let currRow = Math.floor(Number(index / 8));
-    let currCol = Number(index % 8);
-    let dirArr = [[-1, -1], [-1, 1]];
-    if(isKing) {
-        dirArr.push([1,-1]);
-        dirArr.push([1, 1]);
+export const checkKillingMove = (boardStatus, activePlayer) => {
+    let returnData = {};
+    let killingIndex = [];
+    let direction =activePlayer === 'player-one' ? -1 : 1;
+    for(let i in boardStatus) {
+        if(boardStatus[i].isOccupied && boardStatus[i].gutiType === activePlayer) {
+            let dirArr = getDirArr(boardStatus[i].isKing);
+            let coord = getRowColFromIndex(i);
+            let currRow = coord.row;
+            let currCol = coord.col;
+            for(let j in dirArr) {
+                let row = currRow + dirArr[j][0] * direction;
+                let col = currCol + dirArr[j][1] * direction;
+                let data = getIndexFromRowCol(row, col);
+
+                if(boardStatus[data].isOccupied && boardStatus[data].gutiType != activePlayer) {
+                    row = row + dirArr[j][0] * direction;
+                    col = col + dirArr[j][1] * direction;
+                    data = getIndexFromRowCol(row, col);
+                    let isValid = checkValidity(row, col) && !boardStatus[data].isOccupied;
+                    if(isValid) {
+                        killingIndex.push(i);
+                        returnData.hasKillingMove = true;
+                    }
+                }
+            }
+
+        }
     }
 
+    returnData.killingMoves = killingIndex;
+    return returnData;
+};
+
+export const getValidIndexes = (boardStatus, index) =>{
+    let direction = boardStatus[index].gutiType === 'player-one' ? -1 : 1;
+    let dirArr = getDirArr(boardStatus[index].isKing);
+    let ret = [];
+    let killingRet = [];
+    let coordinate = getRowColFromIndex(index);
+    let currRow = coordinate.row;
+    let currCol = coordinate.col;
+    let returnData = {
+        hasKillingMove: false,
+        killingMoves: null,
+        validMoves: null,
+    };
     let isValid = true;
     for(let i in dirArr) {
         let row = currRow + dirArr[i][0] * direction;
         let col = currCol + dirArr[i][1] * direction;
-        let data = row * 8 + col;
-        isValid = checkValidity(row, col) && !boardStatus[data].isOccupied;
-        if (isValid) {
-            ret.push(data);
+        let data = getIndexFromRowCol(row, col);
+
+        if(!boardStatus[data].isOccupied) {
+            isValid = checkValidity(row, col);
+            if(isValid) {
+                ret.push(data);
+            }
+        } else if(boardStatus[data].isOccupied && boardStatus[data].gutiType != boardStatus[index].gutiType) {
+            row = row + dirArr[i][0] * direction;
+            col = col + dirArr[i][1] * direction;
+            data = getIndexFromRowCol(row, col);
+            isValid = checkValidity(row, col) && !boardStatus[data].isOccupied;
+            if(isValid) {
+                killingRet.push(data);
+                returnData.hasKillingMove = true;
+            }
         }
     }
-    console.log("Valid index: ", ret);
-    return ret;
+    returnData.killingMoves = killingRet;
+    returnData.validMoves = ret;
+
+    return returnData;
 };
 
 export const checkValidity = (row, col) => {
@@ -69,4 +131,26 @@ export const checkIfArrSame = (arr1, arr2) => {
         return true;
     }
     return false;
-}
+};
+
+export const getDirArr = (isKing) => {
+    let dirArr = [[-1, -1], [-1, 1]];
+    if(isKing) {
+        dirArr.push([1,-1]);
+        dirArr.push([1, 1]);
+    }
+    return dirArr;
+};
+
+export const getIndexFromRowCol = (row, col) => {
+    let index = row * 8 + col;
+    return index;
+};
+export const getRowColFromIndex = (index) => {
+    let currRow = Math.floor(Number(index / 8));
+    let currCol = Number(index % 8);
+    return {
+        row: currRow,
+        col: currCol,
+    };
+};
