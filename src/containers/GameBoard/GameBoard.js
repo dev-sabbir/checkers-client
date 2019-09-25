@@ -8,12 +8,16 @@ import {generateBoardStatus, checkIfArrSame, getValidIndexes, checkKillingMove} 
 class GameBoard extends Component {
     render() {
         if(this.props.winner) {
-            console.log("Winner is: ", this.props.winner);
+            alert("Winner is: " + this.props.winner);
         }
         let generateBoard = (boardStatus) => {
             let killingMoveData = checkKillingMove(boardStatus, this.props.activePlayer);
             if(!killingMoveData.hasKillingMove && this.props.hasKillingMove) {
                 this.props.toggleActivePlayer();
+            } else {
+                if(killingMoveData.hasKillingMove && this.props.killingGuti && this.props.killingGuti != '' && !killingMoveData.killingGutis.includes(Number(this.props.killingGuti))) {
+                    this.props.toggleActivePlayer();
+                }
             }
             let board = [];
             let rowArr = [];
@@ -38,9 +42,9 @@ class GameBoard extends Component {
 
                 if(boardStatus[boardIndex].isOccupied) {
                     if((killingMoveData.hasKillingMove && killingMoveData.killingMoves.includes(boardIndex)) || !killingMoveData.hasKillingMove) {
-                        guti = <Guti currentIndex = {boardIndex} gutiId={gutiId} onClickGuti={this.props.onClickGuti} type={gutiType} isKing={boardStatus[boardIndex].isKing}></Guti>
+                        guti = <Guti isActive={gutiType===this.props.activePlayer} currentIndex = {boardIndex} gutiId={gutiId} onClickGuti={this.props.onClickGuti} type={gutiType} isKing={boardStatus[boardIndex].isKing}></Guti>
                     } else {
-                        guti = <Guti currentIndex = {boardIndex} gutiId={gutiId}  type={gutiType} isKing={boardStatus[boardIndex].isKing}></Guti>
+                        guti = <Guti isActive={gutiType===this.props.activePlayer} currentIndex = {boardIndex} gutiId={gutiId}  type={gutiType} isKing={boardStatus[boardIndex].isKing}></Guti>
                     }
                 }
 
@@ -140,6 +144,7 @@ const mapStateToProps = (state) => {
         playerTwoGuti: gameBoardState.playerTwoGuti,
         winner: gameBoardState.winner,
         hasKillingMove: gameBoardState.hasKillingMove,
+        killingGuti: gameBoardState.killingGuti,
     };
 };
 const mapDispatchToProps = (dispatch) => {

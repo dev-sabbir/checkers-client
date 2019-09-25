@@ -6,6 +6,7 @@ const initialState = {
     activePlayer: "player-one",
     highlightedIndexes: null,
     winner: "",
+    killingGuti: "",
 };
 
 const gameBoardReducer = (state = initialState, action) => {
@@ -21,7 +22,7 @@ const gameBoardReducer = (state = initialState, action) => {
                 let gutiType = draft.boardStatus[action.boardIndex].gutiType;
                 let activePlayer = draft.activePlayer;
                 if(activePlayer === gutiType) {
-                    draft.selectedGuti = action.gutiId;
+                    draft.selectedGuti = Number(action.gutiId);
                     draft.selectedBoardIndex = action.boardIndex;
                 }
                 break;
@@ -48,14 +49,14 @@ const gameBoardReducer = (state = initialState, action) => {
 
                     let data = state.boardStatus;
 
-                    let gutiId = data[killedIndex].gutiId;
-                    draft.boardStatus = clearBoardIndex(draft.boardStatus, killedIndex);
-
-                    if(gutiId <= 11) {
-                        draft.playerOneGuti[gutiId].status = "inactive";
+                    let killedGutiId = Number(data[killedIndex].gutiId);
+                    draft.killingGuti = selectedGuti;
+                    if(killedGutiId <= 11) {
+                        draft.playerOneGuti[killedGutiId].status = "inactive";
                     } else {
-                        draft.playerTwoGuti[gutiId].status = "inactive";
+                        draft.playerTwoGuti[killedGutiId].status = "inactive";
                     }
+                    draft.boardStatus = clearBoardIndex(draft.boardStatus, killedIndex);
                 } else {
                     draft.activePlayer = draft.activePlayer === 'player-one' ? 'player-two' : 'player-one';
                 }
@@ -63,16 +64,15 @@ const gameBoardReducer = (state = initialState, action) => {
                 let isKing = draft.boardStatus[selectedBoardIndex].isKing;
                 let gutiType = draft.boardStatus[selectedBoardIndex].gutiType;
 
-                draft.selectedGuti = null;
-                draft.selectedBoardIndex = null;
-
                 draft.boardStatus = clearBoardIndex(draft.boardStatus, selectedBoardIndex);
 
                 draft.boardStatus[destIndex].isOccupied = true;
-                draft.boardStatus[destIndex].gutiId = selectedGuti;
+                draft.boardStatus[destIndex].gutiId = Number(selectedGuti);
                 draft.boardStatus[destIndex].gutiType = gutiType;
                 draft.boardStatus[destIndex].isKing = isKing;
 
+                draft.selectedGuti = null;
+                draft.selectedBoardIndex = null;
                 break;
             }
             case "ON_FINISH_GAME": {
@@ -82,6 +82,9 @@ const gameBoardReducer = (state = initialState, action) => {
             case "TOGGLE_ACTIVE_PLAYER": {
                 draft.activePlayer = draft.activePlayer === 'player-one' ? 'player-two' : 'player-one';
                 draft.hasKillingMove = false;
+                draft.killingGuti = '';
+                draft.selectedBoardIndex = '';
+                draft.selectedGuti = "";
             }
             default: {
                 return draft;

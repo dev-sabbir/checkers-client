@@ -17,7 +17,6 @@ export const generateBoardStatus =  (row, col) => {
             if((i%2 === 0 && count%2 === 1) || (i%2 === 1 && count%2 === 0)) {
                 boardStatus[count].color = 'black';
                 if(i<=2 || i>=5) {
-                    gutiCount ++;
                     if(gutiCount <=11) {
                         playerOneGuti[gutiCount] = {};
                         playerOneGuti[gutiCount].status = "active";
@@ -28,6 +27,7 @@ export const generateBoardStatus =  (row, col) => {
                     boardStatus[count].isOccupied = true;
                     boardStatus[count].gutiId = gutiCount;
                     boardStatus[count].isKing = false;
+                    gutiCount ++;
                 }
             }
 
@@ -41,6 +41,7 @@ export const generateBoardStatus =  (row, col) => {
 export const checkKillingMove = (boardStatus, activePlayer) => {
     let returnData = {};
     let killingIndex = [];
+    let killingGutis = [];
     let direction =activePlayer === 'player-one' ? -1 : 1;
     for(let i in boardStatus) {
         if(boardStatus[i].isOccupied && boardStatus[i].gutiType === activePlayer) {
@@ -63,6 +64,7 @@ export const checkKillingMove = (boardStatus, activePlayer) => {
                         isValid = isValid && !boardStatus[data].isOccupied;
                         if(isValid) {
                             killingIndex.push(i);
+                            killingGutis.push(boardStatus[i].gutiId);
                             returnData.hasKillingMove = true;
                         }
                     }
@@ -74,8 +76,10 @@ export const checkKillingMove = (boardStatus, activePlayer) => {
     }
 
     returnData.killingMoves = killingIndex;
+    returnData.killingGutis = killingGutis;
     return returnData;
 };
+
 
 export const getValidIndexes = (boardStatus, index) =>{
     let direction = boardStatus[index].gutiType === 'player-one' ? -1 : 1;
