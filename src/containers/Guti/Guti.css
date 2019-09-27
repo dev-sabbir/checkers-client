@@ -1,17 +1,17 @@
 .guti {
-    height: 55px;
-    width: 55px;
+    height: 40px;
+    width: 40px;
     -webkit-border-radius: 50%;
     -moz-border-radius: 50%;
     border-radius: 50%;
     margin: 0 auto;
     opacity: .5;
 }
-.player-one {
+.guti.player-one {
     background-color: #fffa27;
 }
 
-.player-two {
+.guti.player-two {
     background-color: #4fee58;
 }
 

@@ -1,3 +1,9 @@
+export const init = () => {
+    return {
+        type: "INIT",
+    };
+};
+
 export const onClickGuti = (gutiId, boardIndex) => {
     return {
         type: "ON_CLICK_GUTI",

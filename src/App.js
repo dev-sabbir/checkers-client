@@ -3,7 +3,7 @@ import GameBoard from './containers/GameBoard/GameBoard';
 
 function App() {
   return (
-      <div>
+      <div className="container">
         <GameBoard />
       </div>
   );

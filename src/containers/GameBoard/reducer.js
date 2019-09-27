@@ -1,7 +1,5 @@
 import produce from 'immer';
-import {getRowColFromIndex} from '../../utils/utilities';
 const initialState = {
-    text: "",
     boardStatus: null,
     activePlayer: "player-one",
     highlightedIndexes: null,
@@ -12,6 +10,10 @@ const initialState = {
 const gameBoardReducer = (state = initialState, action) => {
     state = produce(state, draft => {
         switch(action.type) {
+            case "INIT": {
+                draft.winner= "";
+                break;
+            }
             case "UPDATE_BOARD_STATUS": {
                 draft.boardStatus = action.payload.boardStatus;
                 draft.playerOneGuti = action.payload.playerOneGuti;
@@ -77,6 +79,10 @@ const gameBoardReducer = (state = initialState, action) => {
             }
             case "ON_FINISH_GAME": {
                 draft.winner = action.winner;
+                draft.boardStatus = null;
+                draft.activePlayer = "player-one";
+                draft.highlightedIndexes = null;
+                draft.killingGuti= "";
                 break;
             }
             case "TOGGLE_ACTIVE_PLAYER": {
@@ -100,6 +106,6 @@ let clearBoardIndex = (boardStatus, index) => {
     boardStatus[index].gutiId = null;
     boardStatus[index].gutiType = null;
     return boardStatus;
-}
+};
 
 export default gameBoardReducer;

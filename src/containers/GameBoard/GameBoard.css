@@ -1,20 +1,23 @@
 .game-board {
-    width: 50%;
+    width: 90%;
     margin: 0 auto;
+    border: 1px solid black;
 }
 
-.row {
-    width: 92%;
-    display: block;
-    margin: 0 auto;
-}
+/*.row {*/
+/*    width: 92%;*/
+/*    display: block;*/
+/*    margin: 0 auto;*/
+/*}*/
 
 .col {
-    height: 50px;
-    width: 50px;
-    padding: 1em;
-    border: 1px solid black;
-    display: inline-block;
+    display: flex;
+    align-items: center;
+}
+
+.board-item {
+    min-width: 60px;
+    min-height: 60px;
 }
 
 .highlight {
@@ -30,4 +33,21 @@
 }
 div h1 {
     text-align: center;
+}
+
+.inactive-guti div {
+    border: 1px solid black;
+    margin-top: 4px;
+}
+
+.modal.show-modal {
+    display: block;
+}
+
+.modal-body > .player-one {
+    color: #fffa27;
+}
+
+.modal-body > .player-two {
+    color: #4fee58;
 }
