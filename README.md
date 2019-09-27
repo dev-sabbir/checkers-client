@@ -1,4 +1,4 @@
-#Checkers Client
+# Checkers Client
 This is a simple implementation of checkers game. 
 [Demo](https://checkers-sabbir.web.app)
 
